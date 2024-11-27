@@ -16,5 +16,9 @@ To address this issue, we identified several key business questions to guide our
 By answering these questions, we aim to gain actionable insights to optimize delivery performance and address critical delay factors affecting the business.
 
 ## Data Overview
-The dataset  that we used in this analysis represents  a brazilian e-commerce platform’s (Olist) relational structure, consisting of several interconnected tables that provide detail information about orders, product, payment, customer, seller, etc. This dataset spans a time range from October 2016 to October 2018, capturing transactional data within this period. Here is an overview of each tables and its relationship:
+The dataset  that we used in this analysis represents  a brazilian e-commerce platform’s (Olist) relational structure, consisting of several interconnected tables that provide detail information about orders, product, payment, customer, seller, etc. This dataset spans a time range from October 2016 to October 2018, capturing transactional data within this period. The relational structure of the dataset is illustrated in the diagram below:
+
+![OverviewImage](olist_ecommerce.png)
+
+## Q1: What is the percentage of delayed deliveries compared to all deliveries? 
 
