@@ -22,3 +22,4 @@ The dataset  that we used in this analysis represents  a brazilian e-commerce pl
 
 ## Q1: What is the percentage of delayed deliveries compared to all deliveries? 
 
+
