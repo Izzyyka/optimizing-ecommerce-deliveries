@@ -258,7 +258,7 @@ Based on the data, **the product category with the highest delay rate is `home_c
 
 Several popular categories with high order volumes, such as **`garden_tools`** (**11.97%**) and **`toys`** (**11.78%**), also demonstrate significant delay percentages. These categories require close attention as their high order volumes could amplify the impact of delays on the overall customer experience.
 
-## Q7: How does delay probability vary by customer location?
+## Q6: How does delay probability vary by customer location?
 ```sql
 SELECT 
     ST.State_Name AS customer_location,
@@ -285,6 +285,7 @@ ORDER BY
 ```
 Output:
 |customer_location	|total_orders	|delayed_orders	|delay_percentage |
+|---|---|---|---|
 |Maranhao	|393	|99	|25.19 |
 |Alagoas	|208	|50	|24.04 |
 |Ceara	|699	|150	|21.46 |
@@ -295,7 +296,68 @@ Output:
 |Sergipe	|166	|30	|18.07 |
 |Bahia	|1871	|326	|17.42 |
 |Mato Grosso do Sul	|428	|71	|16.59 |
+|...|...|...|...|
 
 ### Insight
+
+The data reveals notable disparities in delivery delay percentages across different customer locations. Maranhão exhibits the highest delay percentage at 25.19%, followed closely by Alagoas (24.04%) and Ceará (21.46%). These regions may face challenges such as inadequate logistics infrastructure, longer delivery routes, or difficulties in coordinating supply chain operations.
+
+## Q7: How does delay probability vary by seller location?
+```sql
+SELECT 
+    ST.State_Name AS seller_location,
+    COUNT(*) AS total_orders,
+    SUM(CASE WHEN O.order_delivered_customer_date > O.order_estimated_delivery_date 
+    THEN 1 ELSE 0 END) AS delayed_orders,
+    ROUND(CAST(SUM(CASE WHEN O.order_delivered_customer_date > O.order_estimated_delivery_date 
+    THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*) * 100, 2) AS delay_percentage
+FROM 
+    olist_sellers_dataset S
+JOIN 
+    olist_order_items_dataset OI ON S.seller_id = OI.seller_id
+JOIN
+	state_name_brazil ST ON ST.State_Code = S.seller_state
+JOIN
+	olist_orders_dataset O ON O.order_id = OI.order_id
+WHERE 
+    O.order_status = 'delivered'
+    AND O.order_delivered_customer_date IS NOT NULL
+    AND O.order_estimated_delivery_date IS NOT NULL
+    AND YEAR(O.order_delivered_customer_date) = 2018 -- Filter tahun 2018
+GROUP BY 
+    ST.State_Name
+ORDER BY 
+    delay_percentage DESC;
+```
+Output:
+|seller_location	|total_orders	|delayed_orders	|delay_percentage |
+|---|---|---|---|
+|Mato Grosso do Sul 	|16	|4	|25 |
+|Maranhao	|402	|95	|23.63 |
+|Rio Grande do Norte	|28	|3	|10.71 |
+|Sao Paulo 	|45339	|4819	|10.63 |
+|Rio de Janeiro 	|2919	|310	|10.62 |
+|Distrito Federal 	|487	|49	|10.06 |
+|Paraiba	|20	|2	|10 |
+|Espirito Santo	|142	|13	|9.15 |
+|Ceara	|47	|4	|8.51 |
+|Santa Catarina 	|2058	|169	|8.21 |
+|...|...|...|...|
+
+### Insight
+We can observe that several states with the highest delay percentages among the top 12 customer states also appear in the top 12 seller states with the highest delay percentages.\
+Based on the data, it is evident that locations such as Maranhão and Mato Grosso do Sul exhibit high delay rates both as seller and customer locations. This suggests a direct relationship between the seller and customer locations in influencing delivery delays. For example, Maranhão shows a significant delay percentage in both categories (23.63% for sellers and 25.19% for customers), indicating potential local logistical challenges. On the other hand, locations like Ceará, Rio de Janeiro, and Espírito Santo display different patterns. For instance, Rio de Janeiro has a significantly lower delay percentage as a seller location (10.62%) compared to as a customer location (18.32%). This indicates that inter-state deliveries to customers in Rio de Janeiro contribute significantly to delays, while deliveries within the state are relatively smoother.
+
+## Recommendations
+   1. Order Growth and Its Impact on Delivery Delays\
+The number of total orders has significantly increased each year, which has resulted in a corresponding rise in delivery delays. This trend highlights that despite the growth in order volume, logistics capacity has not scaled adequately to manage the demand. To address this, an evaluation of logistics infrastructure and capacity expansion is needed to match the increasing volume and prevent further delays.
+   2. Impact of Product Dimensions on Delivery Delays
+Larger products (classified as "Large") have higher delay percentages, suggesting that they face more logistical challenges, including transportation and storage issues. Retailers should consider optimizing the logistics processes for bulkier items, possibly using dedicated carriers or adjusting packaging to reduce handling times and minimize delays.
+   3. Monthly Fluctuations in Delivery Delays
+Delivery delays are particularly high in specific months, with April showing the most significant delays. Seasonal fluctuations, such as higher demand or logistical inefficiencies during peak months, should be closely monitored. Strategies like workforce optimization and improved demand forecasting during these months could help reduce delays.
+   4. Product Categories with High Delay Rates
+Certain product categories, particularly "home_comfort_2" and "furniture_mattress_and_upholstery," show the highest delay rates, despite low order volumes. High-order-volume categories, such as "garden_tools" and "toys," also have considerable delays. These categories should be prioritized for supply chain improvements to ensure customer satisfaction, given their high impact on overall delays.
+   5. Customer and Seller Location Impact on Delivery Delays
+Locations like Maranhão and Mato Grosso do Sul show high delay percentages as both seller and customer locations, indicating localized logistical issues. Targeted interventions, such as improving local distribution networks or partnering with regional logistics providers, may be required to reduce delays in these areas. Conversely, Rio de Janeiro experiences lower delays as a seller location but higher delays as a customer location. This suggests that inter-state deliveries are a key contributor to delays. Focus should be placed on improving long-distance delivery capabilities and exploring regional fulfillment centers to improve service levels.
 
 
