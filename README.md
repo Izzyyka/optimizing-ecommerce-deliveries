@@ -21,6 +21,9 @@ The dataset  that we used in this analysis represents  a brazilian e-commerce pl
 ![OverviewImage](olist_ecommerce.png)
 
 ## Q1: What is the percentage of delayed deliveries compared to all deliveries? 
+We can calculate the delivery delay percentage by the following formula:\
+
+Delay Percentage = (Number of Delays / Total Orders) × 100%
 
 ```sql
 SELECT 
@@ -149,4 +152,150 @@ Output:
 |Large	|14614	|1617	|11.06 |
 |Medium	|31393	|3039	|9.68 |
 |Small	|17062	|1633	|9.57 |
+
+### Insight
+The analysis of delivery delays based on product dimensions reveals a notable trend in 2018. Products categorized as "Large" exhibit the highest delay percentage at 11.06%, followed by "Medium" and "Small" products with delay percentages of 9.68% and 9.57%, respectively. This indicates that larger products are more likely to face delivery delays compared to smaller items. The higher delay rate for larger products could be attributed to the logistical challenges associated with handling and shipping bulkier items, such as storage, transportation, and loading constraints.
+
+## Q4: How does the probability of delay vary across months? Which specific month has the highest delay percentage?
+```sql
+SELECT 
+		-- Mengubah angka bulan menjadi nama bulan
+    DATENAME(MONTH, O.order_delivered_customer_date) AS delivery_month,
+    COUNT(*) AS total_orders,
+    SUM(CASE WHEN O.order_delivered_customer_date > O.order_estimated_delivery_date 
+    THEN 1 ELSE 0 END) AS delayed_orders,
+    ROUND(CAST(SUM(CASE WHEN O.order_delivered_customer_date > O.order_estimated_delivery_date 
+    THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*) * 100, 2) AS delay_percentage
+FROM 
+    olist_orders_dataset O
+WHERE 
+    O.order_status = 'delivered'
+    AND O.order_delivered_customer_date IS NOT NULL
+    AND O.order_estimated_delivery_date IS NOT NULL
+		AND O.order_delivered_carrier_date IS NOT NULL
+GROUP BY 
+		-- Group berdasarkan nama bulan
+    DATENAME(MONTH, O.order_delivered_customer_date),
+    MONTH(O.order_delivered_customer_date)           
+ORDER BY 
+    MONTH(O.order_delivered_customer_date);
+```
+Output:
+|delivery_month	|total_orders	|delayed_orders	|delay_percentage|
+|---|---|---|---|
+|January |6880	|667 |9.69|
+|February |7201	|386 |5.36|
+|March |9206	|1144 |12.43|
+|April |9699	|1565 |16.14|
+|May |10862	|696 |6.41|
+|June |10052	|691	|6.87 |
+|July	|9294	|216	|2.32 |
+|August	|12616	|996	|7.89 |
+|September	|4021	|231	|5.74 |
+|October	|4702	|222	|4.72 |
+|November	|4727	|244	|5.16 |
+|December	|7209	|767	|10.64 |
+
+### Insight
+The probability of delivery delays exhibits notable fluctuations across months between 2016 and 2018, as shown in the table above. **April** stands out with the highest delay percentage at **16.14%**, indicating significant challenges in managing deliveries during this period. **March** and **December** follow with delay percentages of **12.43%** and **10.64%**, respectively, possibly reflecting seasonal demand spikes or logistical inefficiencies.
+
+Conversely, **July** demonstrates the lowest delay percentage of **2.32%**, suggesting relatively smooth operational workflows during this month. Other months, such as **February** (**5.36%**) and **May** (**6.41%**), also recorded lower delay rates, hinting at more manageable delivery conditions.
+
+These patterns suggest that certain months, particularly those with higher delay percentages, may experience increased operational pressures, possibly due to higher order volumes, seasonal peaks, or external factors such as weather conditions. Identifying the root causes behind these trends could help design targeted interventions to reduce delays during these critical periods.
+
+## Q5: Which product categories have the highest delay probability?
+```sql
+SELECT 
+    PN.column2 AS product_category,
+    COUNT(*) AS total_orders,
+    SUM(CASE WHEN O.order_delivered_customer_date > O.order_estimated_delivery_date 
+    THEN 1 ELSE 0 END) AS delayed_orders,
+    
+    ROUND(CAST(SUM(CASE WHEN O.order_delivered_customer_date > O.order_estimated_delivery_date 
+    THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*) * 100, 2) AS delay_percentage
+FROM 
+    olist_products_dataset P
+JOIN 
+    olist_order_items_dataset OI ON P.product_id = OI.product_id
+JOIN 
+    olist_orders_dataset O ON O.order_id = OI.order_id
+JOIN 
+	product_category_name_translation PN ON P.product_category_name = PN.column1
+WHERE 
+    O.order_status = 'delivered'
+    AND O.order_delivered_customer_date IS NOT NULL
+    AND O.order_estimated_delivery_date IS NOT NULL
+		AND P.product_category_name IS NOT NULL
+		AND YEAR(O.order_delivered_customer_date) = 2018 -- Filter tahun 2018
+		
+GROUP BY 
+    PN.column2
+ORDER BY 
+    delay_percentage DESC;
+```
+Output:
+
+|product_category	|total_orders	|delayed_orders	|delay_percentage|
+|---|---|---|---|
+|home_comfort_2	|10	|3	|30 |
+|furniture_mattress_and_upholstery	|21	|5	|23.81 |
+|fashion_sport	|5	|1	|20 |
+|fashion_underwear_beach	|48	|9	|18.75 |
+|tablets_printing_image	|22	|4	|18.18 |
+|christmas_supplies	|96	|15	|15.63 |
+|home_confort	|163	|24	|14.72 |
+|audio	|206	|30	|14.56 | 
+|garden_tools	|2030	|243	|11.97 |
+|toys	|1587	|187	|11.78 |
+|books_technical	|221	|26	|11.76 |
+|computers	|87	|10	|11.49 |
+|electronics	|1925	|213	|11.06 |
+|food	|385	|42	|10.91 |
+|...|...|...|...|
+
+### Insight
+Based on the data, **the product category with the highest delay rate is `home_comfort_2`**, showing a delay percentage of **30%** from a total of 10 orders. This is followed by **`furniture_mattress_and_upholstery`** with a delay percentage of **23.81%** and **`fashion_sport`** at **20%**. Although these categories have relatively low order volumes, the high delay rates indicate potential issues in the supply chain or logistics processes specific to these product types.
+
+Several popular categories with high order volumes, such as **`garden_tools`** (**11.97%**) and **`toys`** (**11.78%**), also demonstrate significant delay percentages. These categories require close attention as their high order volumes could amplify the impact of delays on the overall customer experience.
+
+## Q7: How does delay probability vary by customer location?
+```sql
+SELECT 
+    ST.State_Name AS customer_location,
+    COUNT(*) AS total_orders,
+    SUM(CASE WHEN O.order_delivered_customer_date > O.order_estimated_delivery_date 
+    THEN 1 ELSE 0 END) AS delayed_orders,
+    ROUND(CAST(SUM(CASE WHEN O.order_delivered_customer_date > O.order_estimated_delivery_date 
+    THEN 1 ELSE 0 END) AS FLOAT) / COUNT(*) * 100, 2) AS delay_percentage
+FROM 
+    olist_customers_dataset C
+JOIN 
+    olist_orders_dataset O ON C.customer_id = O.customer_id
+JOIN
+	state_name_brazil ST ON ST.State_Code = C.customer_state
+WHERE 
+    O.order_status = 'delivered'
+    AND O.order_delivered_customer_date IS NOT NULL
+    AND O.order_estimated_delivery_date IS NOT NULL
+	AND YEAR(O.order_delivered_customer_date) = 2018 -- Filter tahun 2018
+GROUP BY 
+    ST.State_Name
+ORDER BY 
+    delay_percentage DESC;
+```
+Output:
+|customer_location	|total_orders	|delayed_orders	|delay_percentage |
+|Maranhao	|393	|99	|25.19 |
+|Alagoas	|208	|50	|24.04 |
+|Ceara	|699	|150	|21.46 |
+|Tocantins	|152	|30	|19.74 |
+|Piaui	|276	|53	|19.2 |
+|Para	|507	|93	|18.34 |
+|Rio de Janeiro 	|6868	|1258	|18.32 |
+|Sergipe	|166	|30	|18.07 |
+|Bahia	|1871	|326	|17.42 |
+|Mato Grosso do Sul	|428	|71	|16.59 |
+
+### Insight
+
 
