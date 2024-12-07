@@ -1,6 +1,7 @@
 # Optimizing Ecommerce Deliveries
 Tools: SQL Server Management Studio\
 Dataset: You can access the dataset [here](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
+Pdf Version: You can access the pdf [here](https://drive.google.com/file/d/1Rj68Gk9Yfs1S_0YRYI49dZNNWOcW8xIw/view?usp=sharing)
 
 ## Understanding the Business Challenge
 Delivery delays present a significant challenge for e-commerce businesses, especially when logistics capacity fails to meet the growing demand for shipments. Delays not only disrupt the supply chain but also risk damaging retailer credibility, as customers may leave negative reviews or lose trust in the service. This problem directly impacts the customer experience, potentially reducing customer retention and loyalty.\
