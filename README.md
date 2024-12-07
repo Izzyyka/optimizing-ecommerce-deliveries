@@ -1,6 +1,6 @@
 # Optimizing Ecommerce Deliveries
 Tools: SQL Server Management Studio\
-Dataset: You can access the dataset [here](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
+Dataset: You can access the dataset [here](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)\
 Pdf Version: You can access the pdf [here](https://drive.google.com/file/d/1Rj68Gk9Yfs1S_0YRYI49dZNNWOcW8xIw/view?usp=sharing)
 
 ## Understanding the Business Challenge
